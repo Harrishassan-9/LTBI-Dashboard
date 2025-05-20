@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Timeline Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #636583;
+        }
+        .dropdown {
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .graph-container {
+            width: 90%;
+            margin: auto;
+        }
+        #timeline-graph {
+            height: 700px;
+            width: 100%;
+        }
+        #controls {
+            margin: 20px;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .progress-bar {
+            width: 80%;
+            margin: 10px auto;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            margin: 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+	button {
+            background-color: #064663;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #043927;
+        }
+    /* Button container styles */
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            opacity:0.8;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .button-container button {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #555;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Content section */
+        .content {
+            text-align: center;
+            padding-top: 100px;
+            animation: fadeIn 3s ease-out;
+            flex-grow: 1;
+            position: relative;
+        }
+	
+	
+    </style>
+</head>
+<body>
+
+	<div class="button-container">
+    <button onclick="smoothTransition('home')">HOME</button>
+</div>
+    <h1>Animated Timeline Visualization</h1>
+    <div class="legend">
+        <!-- Legend items will be dynamically added here -->
+    </div>
+
+    <div class="graph-container">
+        <svg id="timeline-graph"></svg>
+    </div>
+    <div>
+        <label for="progress-bar">Year:</label>
+        <span id="year-label"></span>
+        <input id="progress-bar" type="range" min="2000" max="2024" value="2000" step="1" />
+        <button id="btn-play">Play</button>
+    </div>
+
+    <script>
+        fetch('/tv_data')
+            .then(response => response.json())
+            .then(data => {
+                const timelineData = data.data;
+                const numericColumns = data.numeric_columns;
+
+                // Handle data correctly
+                timelineData.forEach(d => {
+                    d.year = +d.year;
+                    d['new.sp'] = +d['new.sp'];
+                    d['tot.newrel'] = +d['tot.newrel'];
+                });
+
+                // Setup the margins and svg area
+                const margin = { top: 120, right: 250, bottom: 100, left: 100 };
+                const svg = d3.select("#timeline-graph");
+                const width = svg.node().getBoundingClientRect().width - margin.left - margin.right;
+                const height = svg.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+                const chart = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                // Axes groups
+                const xAxisGroup = chart.append("g")
+                    .attr("transform", `translate(0, ${height})`)
+                    .attr("class", "x-axis");
+
+                const yAxisGroup = chart.append("g")
+                    .attr("class", "y-axis");
+
+                // Scales for X and Y axes
+                const xScale = d3.scaleLinear().range([0, width]);
+                const yScale = d3.scaleLinear().range([height, 0]);
+                const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                // Tooltip setup
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+                // Update function for the visualization
+                const updateVisualization = (year) => {
+                    const filteredData = timelineData.filter(d => d.year === year);
+
+                    const radiusScale = d3.scaleLinear()
+                        .domain([0, d3.max(filteredData, d => d['tot.newrel'])])
+                        .range([2, 20]);
+
+                    const circles = chart.selectAll(".data-point")
+                        .data(filteredData, d => d['g.whoregion']);
+
+                    circles.enter()
+                        .append("circle")
+                        .attr("class", "data-point")
+                        .attr("cx", d => xScale(d['new.sp']))
+                        .attr("cy", d => yScale(d['tot.newrel']))
+                        .attr("r", 0)
+                        .attr("fill", d => colorScale(d['g.whoregion']))
+                        .on("mouseover", function (event, d) {
+                            tooltip.transition().duration(200).style("opacity", 1);
+                            tooltip.html(`Region: ${d['g.whoregion']}<br>New SP: ${d['new.sp']}<br>Total New Rel: ${d['tot.newrel']}`)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function () {
+                            tooltip.transition().duration(200).style("opacity", 0);
+                        })
+                        .transition()
+                        .duration(800)
+                        .ease(d3.easeCubicOut)
+                        .attr("r", d => radiusScale(d['tot.newrel']));
+
+                    circles.transition()
+                        .duration(800)
+                        .ease(d3.easeCubicOut)
+                        .attr("cx", d => xScale(d['new.sp']))
+                        .attr("cy", d => yScale(d['tot.newrel']))
+                        .attr("fill", d => colorScale(d['g.whoregion']))
+                        .attr("r", d => radiusScale(d['tot.newrel']));
+
+                    circles.exit()
+                        .transition()
+                        .duration(500)
+                        .attr("r", 0)
+                        .remove();
+
+                    // Update year label
+                    d3.select("#year-label").text(year);
+                };
+
+                const minYear = d3.min(timelineData, d => d.year);
+                const maxYear = d3.max(timelineData, d => d.year);
+                const progressBar = d3.select("#progress-bar");
+                progressBar.attr("min", minYear).attr("max", maxYear).attr("value", minYear);
+
+                // Update X and Y scales
+                xScale.domain([0, d3.max(timelineData, d => d['new.sp'])]);
+                yScale.domain([0, d3.max(timelineData, d => d['tot.newrel'])]);
+
+                // Create the X and Y axis
+                const xAxis = d3.axisBottom(xScale);
+                const yAxis = d3.axisLeft(yScale);
+
+                xAxisGroup.call(xAxis);
+                yAxisGroup.call(yAxis);
+
+                // Add X-axis label
+                chart.append("text")
+                    .attr("class", "x-axis-label")
+                    .attr("x", width / 2)
+                    .attr("y", height + 40)  // position below the axis
+                    .style("text-anchor", "middle")
+                    .text("New SP");
+
+                // Add Y-axis label
+                chart.append("text")
+                    .attr("class", "y-axis-label")
+                    .attr("x", -height / 2)
+                    .attr("y", -60)  // position left of the axis
+                    .attr("transform", "rotate(-90)")  // rotate to make it vertical
+                    .style("text-anchor", "middle")
+                    .text("Total New Rel");
+
+                // Initial update
+                updateVisualization(minYear);
+
+                // Add legend items dynamically based on the color scale
+                const regions = [...new Set(timelineData.map(d => d['g.whoregion']))];
+                const legend = d3.select(".legend");
+
+                regions.forEach(region => {
+                    const legendItem = legend.append("div")
+                        .attr("class", "legend-item");
+
+                    legendItem.append("div")
+                        .attr("class", "legend-color")
+                        .style("background-color", colorScale(region));
+
+                    legendItem.append("span")
+                        .text(region);
+                });
+
+                // Play/Pause functionality
+                let currentYear = minYear;
+                let playing = false;
+                const playButton = document.querySelector("#btn-play");
+
+                playButton.addEventListener("click", function () {
+                    if (playing) {
+                        clearInterval(playInterval);
+                        playButton.innerHTML = "Play";
+                    } else {
+                        playInterval = setInterval(() => {
+                            if (currentYear <= maxYear) {
+                                updateVisualization(currentYear);
+                                progressBar.property("value", currentYear);
+                                currentYear++;
+                            } else {
+                                clearInterval(playInterval);
+                                playButton.innerHTML = "Play";
+                            }
+                        }, 1000);
+                        playButton.innerHTML = "Pause";
+                    }
+                    playing = !playing;
+                });
+
+                // Update visualization on slider change
+                progressBar.on("input", function () {
+                    currentYear = +this.value;
+                    updateVisualization(currentYear);
+                });
+            })
+            .catch(error => console.error(error));
+    </script>
+	
+	<script>
+    // Smooth Transition to Pages with fade-out effect
+    function smoothTransition(page) {
+        document.body.style.opacity = "0"; // Fade-out effect
+        setTimeout(() => {
+            if (page === 'home') {
+                window.location.href = "/"; // Navigates to the root route (main.html)
+            }
+        }, 1000);
+    }
+</script>
+	
+</body>
+</html>

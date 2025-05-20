@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Tree Map of TB Cases</title>
+
+    <!-- Include D3.js -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2a2a3b; /* Dark background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-top: 10px;
+            color: #f4f4f9;
+        }
+
+        #chart-container {
+            display: flex;
+            justify-content: space-between;
+            width: 95%;
+            margin-top: 20px;
+        }
+
+        #treemap-chart {
+            width: 75%;
+            height: 75vh; /* Adjust to accommodate the legend */
+            margin-right: 20px;
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        text {
+            pointer-events: none;
+        }
+
+        #zoom-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .zoom-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .zoom-button:hover {
+            background-color: #0056b3;
+        }
+
+        #legend {
+            width: 20%;
+            margin-top: 20px;
+            color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+
+        .legend-item:hover {
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+	button {
+            background-color: #064663;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #043927;
+        }
+    /* Button container styles */
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            opacity:0.8;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .button-container button {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #555;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Content section */
+        .content {
+            text-align: center;
+            padding-top: 100px;
+            animation: fadeIn 3s ease-out;
+            flex-grow: 1;
+            position: relative;
+        }
+	
+	
+
+
+    </style>
+</head>
+<body>
+
+		<div class="button-container">
+    <button onclick="smoothTransition('home')">HOME</button>
+</div>
+    <h1>Hierarchical Tree Map of TB Cases</h1>
+
+    <div id="chart-container">
+        <!-- Treemap Chart -->
+        <div id="treemap-chart"></div>
+
+        <!-- Legend -->
+        <div id="legend"></div>
+    </div>
+
+    <div id="zoom-controls">
+        <button class="zoom-button" id="zoom-in">Zoom In</button>
+        <button class="zoom-button" id="zoom-out">Zoom Out</button>
+    </div>
+
+    <script>
+        // Get treemap data passed from Flask
+        const sunburstData = {{ sunburst_data | tojson }}; 
+
+        // Prepare the hierarchical data for D3.js
+        let dataMap = {};
+
+        sunburstData.forEach(function(row) {
+            const region = row['g.whoregion'];
+            const country = row['country'];
+            const value = row['new.sp'];
+
+            // Organize data by region and country
+            if (!dataMap[region]) {
+                dataMap[region] = { name: region, children: [] };
+            }
+
+            dataMap[region].children.push({
+                name: country,
+                value: value
+            });
+        });
+
+        // Convert to a format D3.js can understand (Hierarchy format)
+        const root = {
+            name: 'Root',
+            children: Object.values(dataMap)
+        };
+
+        // Set up dimensions for the treemap chart
+        const width = 900;
+        const height = 600;
+
+        // Create the treemap chart layout
+        const treemap = d3.treemap()
+            .size([width, height])
+            .padding(2);
+
+        // Create a color scale
+        const color = d3.scaleOrdinal(d3.schemeSet3); // Use a contrasting color scheme
+
+        // Create an SVG container and a group element to hold the treemap content
+        const svg = d3.select('#treemap-chart')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g');  // Add a group element for zooming
+
+        // Create the root node and prepare the data
+        const rootNode = d3.hierarchy(root)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
+
+        treemap(rootNode);
+
+        // Create rectangles for the treemap chart
+        svg.selectAll('rect')
+            .data(rootNode.descendants())
+            .enter()
+            .append('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('width', d => d.x1 - d.x0)
+            .attr('height', d => d.y1 - d.y0)
+            .style('fill', d => color(d.data.name))
+            .style('stroke', '#fff')
+            .on('mouseover', function(event, d) {
+                d3.select(this).style('opacity', 0.7);
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).style('opacity', 1);
+            })
+            .append('title')
+            .text(d => d.data.name + ': ' + (d.value || 0) + ' TB Cases');
+
+        // Add labels for each rectangle
+        svg.selectAll('text')
+            .data(rootNode.descendants())
+            .enter()
+            .append('text')
+            .attr('x', d => (d.x0 + d.x1) / 2)
+            .attr('y', d => (d.y0 + d.y1) / 2)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '12px')
+            .attr('fill', '#fff')
+            .text(function(d) {
+                if (d.depth === 1) {  // Only show label for regions and countries
+                    return d.data.name;
+                }
+                return '';
+            });
+
+        // Add legend with full region names
+        const regionNames = {
+            'AFR': 'Africa',
+            'AMR': 'Americas',
+            'EMR': 'Eastern Mediterranean',
+            'EUR': 'Europe',
+            'SEAR': 'South-East Asia',
+            'WPR': 'Western Pacific'
+        };
+
+        const legend = d3.select('#legend');
+        Object.keys(dataMap).forEach(region => {
+            const regionFullName = regionNames[region] || region;
+            const legendItem = legend.append('div')
+                .attr('class', 'legend-item')
+                .html(`  
+                    <div class="legend-color" style="background-color: ${color(region)};"></div>
+                    ${regionFullName}
+                `);
+
+            // Interactivity: show details on hover
+            legendItem.on('mouseover', function() {
+                svg.selectAll('rect')
+                    .style('opacity', 0.3); // Dim all regions
+                svg.selectAll('rect')
+                    .filter(d => d.data.name === region) // Highlight the region
+                    .style('opacity', 1);
+            });
+
+            legendItem.on('mouseout', function() {
+                svg.selectAll('rect').style('opacity', 1); // Reset opacity
+            });
+        });
+
+        // Zoom functionality - Apply zoom to the group element holding the content
+        const zoomBehavior = d3.zoom()
+            .scaleExtent([0.5, 3]) // Limit zoom range
+            .on('zoom', (event) => {
+                svg.attr('transform', event.transform);
+            });
+
+        // Apply zoom behavior to the container's group element
+        svg.call(zoomBehavior);
+
+        // Zoom buttons
+        d3.select('#zoom-in').on('click', function() {
+            svg.transition().call(zoomBehavior.scaleBy, 1.2);
+        });
+
+        d3.select('#zoom-out').on('click', function() {
+            svg.transition().call(zoomBehavior.scaleBy, 0.8);
+        });
+    </script>
+	<script>
+    // Smooth Transition to Pages with fade-out effect
+    function smoothTransition(page) {
+        document.body.style.opacity = "0"; // Fade-out effect
+        setTimeout(() => {
+            if (page === 'home') {
+                window.location.href = "/"; // Navigates to the root route (main.html)
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>

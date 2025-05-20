@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Algorithms</title>
+    <style>
+        /* Global body styles */
+        body {
+            background-image: url('/static/Back.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            opacity: 1;
+            transition: opacity 0.5s ease; /* Smooth fade transition */
+        }
+
+        /* Class for fading out */
+        body.fade-out {
+            opacity: 0;
+        }
+
+        /* Navigation bar styles */
+        nav {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Navigation link styles */
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 25px;
+            font-family: Arial, sans-serif;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        /* Hover effect for navigation links */
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Main content styles */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 60px; /* To avoid overlap with navbar */
+            text-align: center;
+            position: relative;
+        }
+
+        /* Dashboard button styles */
+        .dashboard-btn {
+            position: absolute;
+            bottom: 50px; /* Adjust the position to your preference */
+            padding: 15px 30px;
+            font-size: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        /* Hover effect for the dashboard button */
+        .dashboard-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="fd.html">Force-Directed Graph</a>
+        <a href="mc.html">Map Chart</a>
+        <a href="tv.html">Timeline Visualization</a>
+        <a href="ht.html">Hierarchical Tree Map</a>
+        <a href="sunburst.html">Sunburst Chart</a>
+    </nav>
+    <main>
+        <!-- Dashboard Button -->
+        <button class="dashboard-btn" onclick="window.location.href='dashboard.html'">Dashboard</button>
+    </main>
+    <script>
+        // Select all navigation links
+        const links = document.querySelectorAll('nav a');
+
+        links.forEach(link => {
+            link.addEventListener('click', event => {
+                event.preventDefault(); // Stop default navigation behavior
+                document.body.classList.add('fade-out'); // Add fade-out effect
+
+                // Delay navigation to allow the fade-out animation
+                setTimeout(() => {
+                    window.location.href = link.href;
+                }, 500); // Match the CSS transition duration
+            });
+        });
+
+        // Remove fade-out class when the page loads
+        window.addEventListener('load', () => {
+            document.body.classList.remove('fade-out');
+        });
+    </script>
+</body>
+</html>

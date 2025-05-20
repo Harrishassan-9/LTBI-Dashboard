@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+
+    
+
+        /* ------------------- */
+
+
+        /* Styles for MC */
+
+        /* Combined styles for body */
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+
+        .legend {
+            background: white;
+            padding: 10px;
+            line-height: 1.5;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .legend label {
+            cursor: pointer;
+        }
+
+	button {
+            background-color: #064663;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #043927;
+        }
+    /* Button container styles */
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 980px;
+            opacity:0.8;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .button-container button {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #555;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Content section */
+        .content {
+            text-align: center;
+            padding-top: 100px;
+            animation: fadeIn 3s ease-out;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .legend {
+        background: white;
+        padding: 15px; /* Increased padding for a larger look */
+        line-height: 2; /* Increased line height for better spacing */
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        border-radius: 8px; /* Slightly rounded corners */
+        font-size: 16px; /* Increased font size */
+        }
+
+        .legend label {
+            cursor: pointer;
+            font-weight: bold; /* Make labels more prominent */
+        }
+
+        .legend span {
+            font-size: 20px; /* Larger size for the colored circles */
+            vertical-align: middle;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* ------------- */
+
+        /* Styles for TV */
+
+        /* Combined styles for body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0f7fa; /* Subtle light blue background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dropdown {
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .graph-container {
+            width: 90%;
+            margin: auto;
+        }
+        #timeline-graph {
+            height: 700px;
+            width: 100%;
+        }
+        #controls {
+            margin: 20px;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .progress-bar {
+            width: 80%;
+            margin: 10px auto;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            margin: 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+	button {
+            background-color: #064663;
+            color: white;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #043927;
+        }
+    /* Button container styles */
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            opacity:0.8;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .button-container button {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #555;
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Content section */
+        .content {
+            text-align: center;
+            padding-top: 100px;
+            animation: fadeIn 3s ease-out;
+            flex-grow: 1;
+            position: relative;
+        }
+
+
+        /* -------------*/
+        /* Combined styles for body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #324466; /* Subtle light blue background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #timeline-graph {
+            width: 1200px; /* Set width to 100% to take up available width */
+            height: 600px; /* Set a specific height for the timeline graph */
+        }
+
+        #map-chart {
+            width: 100vw;
+            height: 500px; /* Maintain the height or adjust as needed */
+        }
+
+        #sunburst {
+            width: 100%;
+            height: 830px;
+        }
+
+
+        .visualization-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            height: 100vw;
+            padding: 20px;
+        }
+
+        .map-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100vw;
+            padding: 20px;
+        }
+
+        .visualization {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            flex: 1 1 calc(50% - 40px);
+            max-width: calc(50% - 40px);
+            min-width: 400px;
+        }
+
+        .visualization svg {
+            width: 100vw;
+            height: 600px;
+        }
+
+        #legend {
+            margin: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard</h1>
+
+    <div class="visualization-container">
+        <!-- Force-Directed Graph -->
+        <div class="visualization" id="force-directed-graph">
+            <h2>Force-Directed Graph</h2>
+            <svg id="fd-graph"></svg>
+            <div id="tooltip" style="position: absolute; visibility: hidden; background: rgba(0, 0, 0, 0.7); color: white; padding: 8px; border-radius: 4px;"></div>
+        </div>
+
+        <!-- Hierarchical Tree Map -->
+        <div class="visualization" id="hierarchical-tree">
+            <h2>Hierarchical Tree Map of TB Cases</h2>
+            <div id="treemap-chart"></div>
+            <div id="legend1"></div>
+        </div>
+
+        <!-- Map Chart -->
+        <!-- <h2>Map of Countries with TB Cases</h2>
+        <div class="visualization" id="mapChart"> -->
+            <!-- <h2>Map of Countries with TB Cases</h2> -->
+            <!-- <svg id="map-chart"></svg>
+            <div id="map"></div>
+        </div> -->
+
+        <!-- <select id="column-dropdown" class="dropdown"></select> -->
+        <div class="button-container">
+            <button onclick="smoothTransition('home')">HOME</button>
+        </div>
+            <h1>Animated Timeline Visualization</h1>
+            <div class="legend2">
+                <!-- Legend items will be dynamically added here -->
+            </div>
+        
+            <div class="graph-container">
+                <svg id="timeline-graph"></svg>
+            </div>
+            <div>
+                <label for="progress-bar">Year:</label>
+                <span id="year-label"></span>
+                <input id="progress-bar" type="range" min="2000" max="2024" value="2000" step="1" />
+                <button id="btn-play">Play</button>
+            </div>
+
+        <div>
+            <!-- <h1>Animated Timeline Visualization</h1> -->
+            <!-- <label for="progress-bar">Year:</label>
+            <span id="year-label"></span>
+            <input id="progress-bar" type="range" min="2000" max="2024" value="2000" step="1"/>
+            <button id="btn-play">Play</button> -->
+        </div>
+
+        <h2>Map of Countries with TB Cases</h2>
+        <div id="map"></div>
+
+        <div id="sunburst">
+            <div id="controls">
+                <button id="zoom-in">Zoom In</button>
+                <button id="zoom-out">Zoom Out</button>
+            </div>
+        </div>
+
+        <!-- <div class="visualization">
+
+            <h2>SunBurst Chart</h2>
+            <div class="button-container">
+                <button onclick="smoothTransition('home')">HOME</button>
+            </div>
+            
+            <div id="controls">
+                <button id="zoom-in">Zoom In</button>
+                <button id="zoom-out">Zoom Out</button>
+            </div>
+            
+            <div id="legend">
+                <span class="legend-item root">Root</span>
+                <span class="legend-item year">Year</span>
+                <span class="legend-item continent">Continent</span>
+                <span class="legend-item country">Country</span>
+            </div>
+            </div>
+
+        </div> -->
+
+    </div>
+
+    <script>
+        // Force-Directed Graph
+        const fdSvg = d3.select("#fd-graph");
+        const fdWidth = 900;
+        const fdHeight = 600;
+        // const fdWidth = parseInt(fdSvg.style("width"));
+        // const fdHeight = parseInt(fdSvg.style("height"));
+        const fdTooltip = d3.select("#tooltip");
+
+        fdSvg.append("defs")
+            .append("linearGradient")
+            .attr("id", "fd-background-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", fdHeight)
+            .selectAll("stop")
+            .data([
+                { offset: "0%", color: "#f7fbff" },
+                { offset: "100%", color: "#08306b" }
+            ])
+            .enter()
+            .append("stop")
+            .attr("offset", d => d.offset)
+            .attr("stop-color", d => d.color);
+
+        fdSvg.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "url(#fd-background-gradient)");
+
+        const fdGroup = fdSvg.append("g");
+        const fdZoom = d3.zoom().on("zoom", event => fdGroup.attr("transform", event.transform));
+        fdSvg.call(fdZoom);
+
+        d3.json('/fd_data').then(data => {
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(50))
+                .force("charge", d3.forceManyBody().strength(-50))
+                .force("center", d3.forceCenter(fdWidth / 2, fdHeight / 2));
+
+            const link = fdGroup.selectAll(".link")
+                .data(data.links)
+                .enter()
+                .append("line")
+                .attr("class", "link")
+                .style("stroke", "#999");
+
+            const node = fdGroup.selectAll(".node")
+                .data(data.nodes)
+                .enter()
+                .append("circle")
+                .attr("class", "node")
+                .attr("r", 5)
+                .style("fill", "#16cfc0")
+                .call(d3.drag()
+                    .on("start", dragStart)
+                    .on("drag", dragged)
+                    .on("end", dragEnd))
+                .on("click", handleNodeClick);
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+            });
+
+            function dragStart(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragEnd(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            function handleNodeClick(event, d) {
+                const details = `Node ID: ${d.id}\nGroup: ${d.group}\nDetails: ${JSON.stringify(d.details, null, 2)}`;
+                alert(details); // Display details in an alert box
+            }
+        });
+
+        // Hierarchical Tree Map
+        // Get treemap data passed from Flask
+        const sunburstData = {{ sunburst_data | tojson }}; 
+
+        // Prepare the hierarchical data for D3.js
+        let dataMap = {};
+
+        sunburstData.forEach(function(row) {
+            const region = row['g.whoregion'];
+            const country = row['country'];
+            const value = row['new.sp'];
+
+            // Organize data by region and country
+            if (!dataMap[region]) {
+                dataMap[region] = { name: region, children: [] };
+            }
+
+            dataMap[region].children.push({
+                name: country,
+                value: value
+            });
+        });
+
+        // Convert to a format D3.js can understand (Hierarchy format)
+        const root = {
+            name: 'Root',
+            children: Object.values(dataMap)
+        };
+
+        // Set up dimensions for the treemap chart
+        const width = 900;
+        const height = 600;
+
+        // Create the treemap chart layout
+        const treemap = d3.treemap()
+            .size([width, height])
+            .padding(2);
+
+        // Create a color scale
+        const color = d3.scaleOrdinal(d3.schemeSet3); // Use a contrasting color scheme
+
+        // Create an SVG container and a group element to hold the treemap content
+        const svg = d3.select('#treemap-chart')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .append('g');  // Add a group element for zooming
+
+        // Create the root node and prepare the data
+        const rootNode = d3.hierarchy(root)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
+
+        treemap(rootNode);
+
+        // Create rectangles for the treemap chart
+        svg.selectAll('rect')
+            .data(rootNode.descendants())
+            .enter()
+            .append('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('width', d => d.x1 - d.x0)
+            .attr('height', d => d.y1 - d.y0)
+            .style('fill', d => color(d.data.name))
+            .style('stroke', '#fff')
+            .on('mouseover', function(event, d) {
+                d3.select(this).style('opacity', 0.7);
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).style('opacity', 1);
+            })
+            .append('title')
+            .text(d => d.data.name + ': ' + (d.value || 0) + ' TB Cases');
+
+        // Add labels for each rectangle
+        svg.selectAll('text')
+            .data(rootNode.descendants())
+            .enter()
+            .append('text')
+            .attr('x', d => (d.x0 + d.x1) / 2)
+            .attr('y', d => (d.y0 + d.y1) / 2)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '12px')
+            .attr('fill', '#fff')
+            .text(function(d) {
+                if (d.depth === 1) {  // Only show label for regions and countries
+                    return d.data.name;
+                }
+                return '';
+            });
+
+        // Add legend with full region names
+        const regionNames = {
+            'AFR': 'Africa',
+            'AMR': 'Americas',
+            'EMR': 'Eastern Mediterranean',
+            'EUR': 'Europe',
+            'SEAR': 'South-East Asia',
+            'WPR': 'Western Pacific'
+        };
+
+        const legend = d3.select('#legend1');
+        Object.keys(dataMap).forEach(region => {
+            const regionFullName = regionNames[region] || region;
+            const legendItem = legend.append('div')
+                .attr('class', 'legend-item')
+                .html(`  
+                    <div class="legend-color" style="background-color: ${color(region)};"></div>
+                    ${regionFullName}
+                `);
+
+            // Interactivity: show details on hover
+            legendItem.on('mouseover', function() {
+                svg.selectAll('rect')
+                    .style('opacity', 0.3); // Dim all regions
+                svg.selectAll('rect')
+                    .filter(d => d.data.name === region) // Highlight the region
+                    .style('opacity', 1);
+            });
+
+            legendItem.on('mouseout', function() {
+                svg.selectAll('rect').style('opacity', 1); // Reset opacity
+            });
+        });
+
+        // Zoom functionality - Apply zoom to the group element holding the content
+        const zoomBehavior = d3.zoom()
+            .scaleExtent([0.5, 3]) // Limit zoom range
+            .on('zoom', (event) => {
+                svg.attr('transform', event.transform);
+            });
+
+        // Apply zoom behavior to the container's group element
+        svg.call(zoomBehavior);
+
+        // Zoom buttons
+        d3.select('#zoom-in').on('click', function() {
+            svg.transition().call(zoomBehavior.scaleBy, 1.2);
+        });
+
+        d3.select('#zoom-out').on('click', function() {
+            svg.transition().call(zoomBehavior.scaleBy, 0.8);
+        });
+
+        ///////////////
+
+        fetch('/tv_data')
+            .then(response => response.json())
+            .then(data => {
+                const timelineData = data.data;
+                const numericColumns = data.numeric_columns;
+
+                // Handle data correctly
+                timelineData.forEach(d => {
+                    d.year = +d.year;
+                    d['new.sp'] = +d['new.sp'];
+                    d['tot.newrel'] = +d['tot.newrel'];
+                });
+
+                // Setup the margins and svg area
+                const margin = { top: 120, right: 250, bottom: 100, left: 100 };
+                const svg = d3.select("#timeline-graph");
+                const width = svg.node().getBoundingClientRect().width - margin.left - margin.right;
+                const height = svg.node().getBoundingClientRect().height - margin.top - margin.bottom;
+
+                const chart = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                // Axes groups
+                const xAxisGroup = chart.append("g")
+                    .attr("transform", `translate(0, ${height})`)
+                    .attr("class", "x-axis");
+
+                const yAxisGroup = chart.append("g")
+                    .attr("class", "y-axis");
+
+                // Scales for X and Y axes
+                const xScale = d3.scaleLinear().range([0, width]);
+                const yScale = d3.scaleLinear().range([height, 0]);
+                const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                // Tooltip setup
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+                // Update function for the visualization
+                const updateVisualization = (year) => {
+                    const filteredData = timelineData.filter(d => d.year === year);
+
+                    const radiusScale = d3.scaleLinear()
+                        .domain([0, d3.max(filteredData, d => d['tot.newrel'])])
+                        .range([2, 20]);
+
+                    const circles = chart.selectAll(".data-point")
+                        .data(filteredData, d => d['g.whoregion']);
+
+                    circles.enter()
+                        .append("circle")
+                        .attr("class", "data-point")
+                        .attr("cx", d => xScale(d['new.sp']))
+                        .attr("cy", d => yScale(d['tot.newrel']))
+                        .attr("r", 0)
+                        .attr("fill", d => colorScale(d['g.whoregion']))
+                        .on("mouseover", function (event, d) {
+                            tooltip.transition().duration(200).style("opacity", 1);
+                            tooltip.html(`Region: ${d['g.whoregion']}<br>New SP: ${d['new.sp']}<br>Total New Rel: ${d['tot.newrel']}`)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function () {
+                            tooltip.transition().duration(200).style("opacity", 0);
+                        })
+                        .transition()
+                        .duration(800)
+                        .ease(d3.easeCubicOut)
+                        .attr("r", d => radiusScale(d['tot.newrel']));
+
+                    circles.transition()
+                        .duration(800)
+                        .ease(d3.easeCubicOut)
+                        .attr("cx", d => xScale(d['new.sp']))
+                        .attr("cy", d => yScale(d['tot.newrel']))
+                        .attr("fill", d => colorScale(d['g.whoregion']))
+                        .attr("r", d => radiusScale(d['tot.newrel']));
+
+                    circles.exit()
+                        .transition()
+                        .duration(500)
+                        .attr("r", 0)
+                        .remove();
+
+                    // Update year label
+                    d3.select("#year-label").text(year);
+                };
+
+                const minYear = d3.min(timelineData, d => d.year);
+                const maxYear = d3.max(timelineData, d => d.year);
+                const progressBar = d3.select("#progress-bar");
+                progressBar.attr("min", minYear).attr("max", maxYear).attr("value", minYear);
+
+                // Update X and Y scales
+                xScale.domain([0, d3.max(timelineData, d => d['new.sp'])]);
+                yScale.domain([0, d3.max(timelineData, d => d['tot.newrel'])]);
+
+                // Create the X and Y axis
+                const xAxis = d3.axisBottom(xScale);
+                const yAxis = d3.axisLeft(yScale);
+
+                xAxisGroup.call(xAxis);
+                yAxisGroup.call(yAxis);
+
+                // Add X-axis label
+                chart.append("text")
+                    .attr("class", "x-axis-label")
+                    .attr("x", width / 2)
+                    .attr("y", height + 40)  // position below the axis
+                    .style("text-anchor", "middle")
+                    .text("New SP");
+
+                // Add Y-axis label
+                chart.append("text")
+                    .attr("class", "y-axis-label")
+                    .attr("x", -height / 2)
+                    .attr("y", -60)  // position left of the axis
+                    .attr("transform", "rotate(-90)")  // rotate to make it vertical
+                    .style("text-anchor", "middle")
+                    .text("Total New Rel");
+
+                // Initial update
+                updateVisualization(minYear);
+
+                // Add legend items dynamically based on the color scale
+                const regions = [...new Set(timelineData.map(d => d['g.whoregion']))];
+                const legend = d3.select(".legend2");
+
+                regions.forEach(region => {
+                    const legendItem = legend.append("div")
+                        .attr("class", "legend-item");
+
+                    legendItem.append("div")
+                        .attr("class", "legend-color")
+                        .style("background-color", colorScale(region));
+
+                    legendItem.append("span")
+                        .text(region);
+                });
+
+                // Play/Pause functionality
+                let currentYear = minYear;
+                let playing = false;
+                const playButton = document.querySelector("#btn-play");
+
+                playButton.addEventListener("click", function () {
+                    if (playing) {
+                        clearInterval(playInterval);
+                        playButton.innerHTML = "Play";
+                    } else {
+                        playInterval = setInterval(() => {
+                            if (currentYear <= maxYear) {
+                                updateVisualization(currentYear);
+                                progressBar.property("value", currentYear);
+                                currentYear++;
+                            } else {
+                                clearInterval(playInterval);
+                                playButton.innerHTML = "Play";
+                            }
+                        }, 1000);
+                        playButton.innerHTML = "Pause";
+                    }
+                    playing = !playing;
+                });
+
+                // Update visualization on slider change
+                progressBar.on("input", function () {
+                    currentYear = +this.value;
+                    updateVisualization(currentYear);
+                });
+            })
+            .catch(error => console.error(error));
+
+        //////////////////
+        // Initialize the map
+        var map = L.map('map').setView([20, 0], 2);  // Default center and zoom
+
+        // Set up the tile layer (OpenStreetMap in this case)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Coordinates for countries (defined in JavaScript)
+const countryCoords = {
+    "Aruba": [12.5211, -69.9683],
+    "Afghanistan": [33.9391, 67.7100],
+    "Angola": [-11.2027, 17.8739],
+    "Anguilla": [18.2206, -63.0686],
+    "Albania": [41.1533, 20.1683],
+    "Andorra": [42.5078, 1.5211],
+    "Netherlands Antilles": [12.2265, -69.0651],
+    "United Arab Emirates": [23.4241, 53.8478],
+    "Argentina": [-38.4161, -63.6167],
+    "Armenia": [40.0691, 45.0382],
+    "American Samoa": [-14.2700, -170.1322],
+    "Antigua and Barbuda": [17.0608, -61.7964],
+    "Australia": [-25.2744, 133.7751],
+    "Austria": [47.5162, 14.5501],
+    "Azerbaijan": [40.1431, 47.5769],
+    "Burundi": [-3.3731, 29.9189],
+    "Belgium": [50.8503, 4.3517],
+    "Benin": [9.3075, 2.3158],
+    "Burkina Faso": [12.2383, -1.5616],
+    "Bulgaria": [42.7339, 25.4858],
+    "Bahrain": [25.9304, 50.6378],
+    "Bahamas": [25.0343, -77.3963],
+    "Bosnia and Herzegovina": [43.8486, 18.3564],
+    "Belarus": [53.7098, 27.9534],
+    "Belize": [17.1899, -88.4976],
+    "Bermuda": [32.3213, -64.7574],
+    "Bolivia (Plurinational State of)": [-16.2902, -63.5887],
+    "Barbados": [13.1939, -59.5432],
+    "Brunei Darussalam": [4.5353, 114.7277],
+    "Bhutan": [27.5147, 90.4336],
+    "Central African Republic": [6.6111, 20.9394],
+    "Canada": [56.1304, -106.3468],
+    "Switzerland": [46.8182, 8.2275],
+    "Chile": [-35.6751, -71.5430],
+    "Côte d'Ivoire": [7.539989, -5.547080],
+    "Cameroon": [3.8480, 11.5021],
+    "Democratic Republic of the Congo": [-4.0383, 21.7587],
+    "Congo": [-4.2586, 15.2429],
+    "Cook Islands": [-21.2367, -159.7777],
+    "Colombia": [4.5709, -74.2973],
+    "Comoros": [-11.8750, 43.8722],
+    "Cabo Verde": [16.0020, -24.0132],
+    "Costa Rica": [9.7489, -83.7534],
+    "Cuba": [21.5218, -77.7812],
+    "Curaçao": [12.1696, -68.9900],
+    "Cayman Islands": [19.3131, -81.2546],
+    "Cyprus": [35.1264, 33.4299],
+    "Czechia": [49.8175, 15.4730],
+    "Djibouti": [11.8251, 42.5903],
+    "Dominica": [15.4149, -61.3703],
+    "Denmark": [56.2639, 9.5018],
+    "Dominican Republic": [18.7357, -70.1627],
+    "Algeria": [28.0339, 1.6596],
+    "Ecuador": [-1.8312, -78.1834],
+    "Eritrea": [15.1794, 39.7823],
+    "Estonia": [58.5953, 25.0136],
+    "Finland": [61.9241, 25.7482],
+    "Fiji": [-16.5782, 179.4144],
+    "Micronesia (Federated States of)": [6.9101, 158.2491],
+    "Gabon": [-0.8037, 11.6094],
+    "United Kingdom of Great Britain and Northern Ireland": [55.3781, -3.4360],
+    "Georgia": [42.3154, 43.3569],
+    "Ghana": [7.9465, -1.0232],
+    "Guinea": [9.9456, -9.6966],
+    "Gambia": [13.4432, -15.3101],
+    "Guinea-Bissau": [11.8037, -15.1804],
+    "Equatorial Guinea": [1.6508, 10.2679],
+    "Greece": [39.0742, 21.8243],
+    "Grenada": [12.2628, -61.6042],
+    "Greenland": [71.7069, -42.6043],
+    "Guatemala": [15.7835, -90.2308],
+    "Guam": [13.4443, 144.7937],
+    "Guyana": [4.8604, -58.9302],
+    "China, Hong Kong SAR": [22.3193, 114.1694],
+    "Honduras": [13.9440, -83.3938],
+    "Croatia": [45.1, 15.2],
+    "Haiti": [18.9712, -72.2852],
+    "Hungary": [47.1625, 19.5033],
+    "Ireland": [53.1424, -7.6921],
+    "Iraq": [33.2232, 43.6793],
+    "Iceland": [64.9631, -19.0208],
+    "Israel": [31.4680, 35.2048],
+    "Italy": [41.8719, 12.5674],
+    "Jamaica": [18.1096, -77.2975],
+    "Jordan": [30.5852, 36.2384],
+    "Kazakhstan": [48.0196, 66.9237],
+    "Kenya": [-1.2921, 36.8219],
+    "Kyrgyzstan": [41.2044, 74.7661],
+    "Cambodia": [12.5657, 104.9910],
+    "Kiribati": [-3.3704, -168.7340],
+    "Saint Kitts and Nevis": [17.3572, -62.7838],
+    "Kuwait": [29.3759, 47.9774],
+    "Lao People's Democratic Republic": [19.8563, 102.4955],
+    "Lebanon": [33.8547, 35.8623],
+    "Liberia": [6.4281, -9.4295],
+    "Libya": [26.3351, 17.2283],
+    "Saint Lucia": [13.9094, -60.9789],
+    "Sri Lanka": [7.8755, 80.7718],
+    "Lesotho": [-29.6098, 28.2336],
+    "Lithuania": [55.1694, 23.8813],
+    "Luxembourg": [49.6117, 6.13],
+    "Latvia": [56.8796, 24.6032],
+    "China, Macao SAR": [22.1987, 113.5439],
+    "Morocco": [31.7917, -7.0926],
+    "Monaco": [43.7333, 7.4167],
+    "Republic of Moldova": [47.4116, 28.3699],
+    "Madagascar": [-18.7669, 46.8691],
+    "Maldives": [3.2028, 73.2207],
+    "Malawi": [-13.2543, 34.3015],
+    "Mexico": [23.6345, -102.5528],
+    "Malaysia": [4.2105, 101.9758],
+    "Mozambique": [-18.6657, 35.5296],
+    "Namibia": [-22.9576, 18.4904],
+    "Nauru": [-0.5228, 166.9315],
+    "New Zealand": [-40.9006, 174.8860],
+    "Niger": [17.6078, 8.0817],
+    "Nigeria": [9.0820, 8.6753],
+    "Norway": [60.4720, 8.4689],
+    "Oman": [21.4735, 55.9754],
+    "Pakistan": [30.3753, 69.3451],
+    "Panama": [8.5380, -80.7821]
+};
+
+
+        // Sample markers from Flask context
+        var markers = {{ markers | tojson }};
+
+        // Function to categorize the color based on tot.newrel value
+        function getColor(totNewrel) {
+            if (totNewrel < 100) return 'green';
+            if (totNewrel < 500) return 'orange';
+            return 'red';
+        }
+
+        // Store references to markers by category
+        var markersByCategory = {
+            green: [],
+            orange: [],
+            red: []
+        };
+
+        // Add markers to the map
+        markers.forEach(function(marker) {
+            var country = marker.country;
+            var totNewrel = marker.tot_newrel;
+
+            if (countryCoords[country]) {
+                var coords = countryCoords[country];
+                var color = getColor(totNewrel);
+
+                var circleMarker = L.circleMarker([coords[0], coords[1]], {
+                    color: color,
+                    radius: 8
+                })
+                .bindPopup('<strong>' + country + '</strong><br>' +
+                           'TB Cases: ' + totNewrel)
+                .addTo(map);
+
+                markersByCategory[color].push(circleMarker);
+            }
+        });
+
+        // Create the legend control
+        var legendmap = L.control({ position: 'bottomright' });
+
+        legendmap.onAdd = function() {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <label>
+                    <input type="checkbox" value="green" checked> 
+                    <span style="color: green;">&#9679;</span> Less than 100
+                </label><br>
+                <label>
+                    <input type="checkbox" value="orange" checked> 
+                    <span style="color: orange;">&#9679;</span> 100 - 499
+                </label><br>
+                <label>
+                    <input type="checkbox" value="red" checked> 
+                    <span style="color: red;">&#9679;</span> 500 and above
+                </label>
+            `;
+            return div;
+        };
+
+        legendmap.addTo(map);
+
+        // Event listener for legend checkboxes
+        document.querySelector('.legend').addEventListener('change', function(e) {
+            var color = e.target.value;
+            var checked = e.target.checked;
+
+            markersByCategory[color].forEach(function(marker) {
+                if (checked) {
+                    map.addLayer(marker);
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+        });
+
+        /* Sunburst Chart */
+        fetch('/sunburst_data')
+            .then(response => response.json())
+            .then(data => {
+                let scale = 1;
+                const svg = d3.select("#sunburst")
+                    .append("svg")
+                    .attr("width", "100%")
+                    .attr("height", "100%")
+                    .append("g")
+                    .attr("transform", `translate(400, 400)`);
+
+                const partition = d3.partition().size([2 * Math.PI, 400]); // size defines the angle and radius for the segments
+
+
+                const color = d3.scaleOrdinal()
+                    .range(["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]);
+
+                const root = d3.hierarchy(data)
+                    .sum(d => d.value)
+                    .sort((a, b) => b.value - a.value);
+
+                partition(root);
+
+                const arc = d3.arc()
+                .startAngle(d => d.x0)
+                .endAngle(d => d.x1)
+                .innerRadius(d => d.y0)
+                .outerRadius(d => d.y1);
+
+
+                const path = svg.selectAll("path")
+                .data(root.descendants())
+                .enter().append("path")
+                .attr("d", arc)
+                .style("fill", d => color(d.depth))
+                .style("stroke", "#fff")
+                .style("stroke-width", "1px")
+                .on("click", clicked);
+
+                    const label = svg.append("g")
+                .attr("pointer-events", "none")
+                .attr("text-anchor", "middle")
+                .selectAll("text")
+                .data(root.descendants())
+                .enter().append("text")
+                .attr("transform", d => `
+                    rotate(${(d.x0 + d.x1) / 2 * 180 / Math.PI - 90})
+                    translate(${(d.y0 + d.y1) / 2},0)
+                    rotate(${(d.x1 - d.x0) > Math.PI ? 180 : 0})
+                `)
+                .attr("dy", "0.35em")
+                .attr("display", d => (d.x1 - d.x0 > 0.03 ? null : "none"))
+                .text(d => d.data.name);
+
+                function clicked(event, p) {
+                root.each(d => d.target = {
+                    x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+                    x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+                    y0: Math.max(0, d.y0 - p.depth),
+                    y1: Math.max(0, d.y1 - p.depth)
+                });
+
+                const t = svg.transition().duration(750);
+
+                path.transition(t).attrTween("d", d => () => arc(d.target));
+                label.transition(t)
+                    .attr("transform", d => `
+                        rotate(${(d.target.x0 + d.target.x1) / 2 * 180 / Math.PI - 90})
+                        translate(${(d.target.y0 + d.target.y1) / 2},0)
+                        rotate(${(d.target.x1 - d.target.x0) > Math.PI ? 180 : 0})
+                    `)
+                    .attr("display", d => (d.target.x1 - d.target.x0 > 0.03 ? null : "none"));
+            }
+
+
+
+                document.getElementById("zoom-in").addEventListener("click", () => {
+                    scale += 0.1;
+                    svg.attr("transform", `translate(400, 400) scale(${scale})`);
+                });
+
+                document.getElementById("zoom-out").addEventListener("click", () => {
+                    scale = Math.max(0.5, scale - 0.1);
+                    svg.attr("transform", `translate(400, 400) scale(${scale})`);
+                });
+            });
+    </script>
+    	<script>
+            // Smooth Transition to Pages with fade-out effect
+            function smoothTransition(page) {
+                document.body.style.opacity = "0"; // Fade-out effect
+                setTimeout(() => {
+                    if (page === 'home') {
+                        window.location.href = "/"; // Navigates to the root route (main.html)
+                    }
+                }, 1000);
+            }
+        </script>
+
+</body>
+</html>
